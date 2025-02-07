@@ -2,7 +2,7 @@ const mysql = require("mysql2");
 
 // Create a connection to the database
 const connection = mysql.createConnection({
-  host: "my-mysql-container", //public ip of my vm
+  host: "51.21.150.68"
   user: "root",
   password: "Aditi@1122",
   port: 3306,   
