@@ -2,52 +2,55 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCOUNT_ID = '296062592493'
         AWS_REGION = 'eu-north-1'
-        ECR_REPO = '296062592493.dkr.ecr.eu-north-1.amazonaws.com/employee-ecr-jenkins'
-        NETWORK_NAME = 'my-network'
-        REPO_URL = 'https://github.com/AditiRaghav7/employee-ecr-jenkins.git'
+        ECR_REGISTRY = '296062592493.dkr.ecr.eu-north-1.amazonaws.com'
+        ECR_REPOSITORY = 'employee-ecr-jenkins'
+        FRONTEND_IMAGE = 'my-frontend-image'
+        BACKEND_IMAGE = 'my-backend-image'
+        MYSQL_IMAGE = 'my-mysql-image'
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: "$REPO_URL"
+                git 'https://github.com/AditiRaghav7/employee-ecr-jenkins.git'
             }
         }
 
-        stage('Login to AWS ECR') {
+        stage('Authenticate with AWS ECR') {
             steps {
                 script {
-                    sh """
-                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-                    sed -i '/"auths": {/,+2 d' ~/.docker/config.json
-                    """
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
                 }
             }
         }
 
-        stage('Verify and Build Docker Images') {
+        stage('Build Docker Images') {
             steps {
                 script {
-                    dir('frontend') {
-                sh 'docker build -t my-frontend-image .'
+                    sh "docker build -t ${FRONTEND_IMAGE} ./frontend"
+                    sh "docker build -t ${BACKEND_IMAGE} ./backend"
+                    sh "docker build -t ${MYSQL_IMAGE} ./mysql"
                 }
             }
         }
 
-        stage('Tag and Push Images to ECR') {
+        stage('Tag Docker Images') {
             steps {
                 script {
-                    sh """
-                    docker tag my-frontend-image $ECR_REPO:frontend
-                    docker tag my-backend-image $ECR_REPO:backend
-                    docker tag my-mysql-image $ECR_REPO:mysql
+                    sh "docker tag ${FRONTEND_IMAGE}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
+                    sh "docker tag ${BACKEND_IMAGE}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
+                    sh "docker tag ${MYSQL_IMAGE}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                }
+            }
+        }
 
-                    docker push $ECR_REPO:frontend
-                    docker push $ECR_REPO:backend
-                    docker push $ECR_REPO:mysql
-                    """
+        stage('Push Docker Images to ECR') {
+            steps {
+                script {
+                    sh "docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
+                    sh "docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
+                    sh "docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
                 }
             }
         }
@@ -55,11 +58,9 @@ pipeline {
         stage('Remove Old Containers') {
             steps {
                 script {
-                    sh """
-                    docker ps -q --filter "name=my-frontend-container" | xargs -r docker stop | xargs -r docker rm
-                    docker ps -q --filter "name=my-backend-container" | xargs -r docker stop | xargs -r docker rm
-                    docker ps -q --filter "name=my-mysql-container" | xargs -r docker stop | xargs -r docker rm
-                    """
+                    sh "docker rm -f my-frontend-container || true"
+                    sh "docker rm -f my-backend-container || true"
+                    sh "docker rm -f my-mysql-container || true"
                 }
             }
         }
@@ -67,13 +68,9 @@ pipeline {
         stage('Run New Containers') {
             steps {
                 script {
-                    sh "docker network create $NETWORK_NAME || true"
-
-                    sh """
-                    docker run -d --name my-mysql-container --network $NETWORK_NAME -p 3306:3306 $ECR_REPO:mysql
-                    docker run -d --name my-backend-container --network $NETWORK_NAME -p 8000:8000 $ECR_REPO:backend
-                    docker run -d --name my-frontend-container --network $NETWORK_NAME -p 5000:5000 $ECR_REPO:frontend
-                    """
+                    sh "docker run -d --name my-frontend-container -p 5000:5000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
+                    sh "docker run -d --name my-backend-container -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
+                    sh "docker run -d --name my-mysql-container -p 3306:3306 ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
                 }
             }
         }
