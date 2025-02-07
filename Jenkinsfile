@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/AditiRaghav7/employee-ecr-jenkins.git'
+                git branch: 'main' , url: 'https://github.com/AditiRaghav7/employee-ecr-jenkins.git'
             }
         }
 
