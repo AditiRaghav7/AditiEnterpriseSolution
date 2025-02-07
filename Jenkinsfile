@@ -30,23 +30,8 @@ pipeline {
         stage('Verify and Build Docker Images') {
             steps {
                 script {
-                    sh 'pwd && ls -la' // Debugging workspace
-
-                    if (!fileExists('frontend')) {
-                        error("ERROR: frontend directory not found!")
-                    }
-                    if (!fileExists('backend')) {
-                        error("ERROR: backend directory not found!")
-                    }
-                    if (!fileExists('mysql')) {
-                        error("ERROR: mysql directory not found!")
-                    }
-
-                    sh """
-                    docker build -t my-frontend-image ./frontend
-                    docker build -t my-backend-image ./backend
-                    docker build -t my-mysql-image ./mysql
-                    """
+                    dir('frontend') {
+                sh 'docker build -t my-frontend-image .'
                 }
             }
         }
