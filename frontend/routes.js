@@ -1,7 +1,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const router = express.Router();
-
+const connection = require('./conn');
 // Backend API Base URL
 const host = 'http://51.21.150.68:8000/employees'; 
 
