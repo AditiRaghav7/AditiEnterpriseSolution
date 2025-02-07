@@ -19,10 +19,11 @@ pipeline {
         stage('Login to AWS ECR') {
             steps {
                 script {
- sh """
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-            sed -i '/"auths": {/,+2 d' ~/.docker/config.json
-            """                }
+                    sh """
+                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+                    sed -i '/"auths": {/,+2 d' ~/.docker/config.json
+                    """
+                }
             }
         }
 
@@ -31,23 +32,21 @@ pipeline {
                 script {
                     sh 'pwd && ls -la' // Debugging workspace
 
-                    if (fileExists('frontend')) {
-                        sh "docker build -t my-frontend-image ./frontend"
-                    } else {
+                    if (!fileExists('frontend')) {
                         error("ERROR: frontend directory not found!")
                     }
-
-                    if (fileExists('backend')) {
-                        sh "docker build -t my-backend-image ./backend"
-                    } else {
+                    if (!fileExists('backend')) {
                         error("ERROR: backend directory not found!")
                     }
-
-                    if (fileExists('mysql')) {
-                        sh "docker build -t my-mysql-image ./mysql"
-                    } else {
+                    if (!fileExists('mysql')) {
                         error("ERROR: mysql directory not found!")
                     }
+
+                    sh """
+                    docker build -t my-frontend-image ./frontend
+                    docker build -t my-backend-image ./backend
+                    docker build -t my-mysql-image ./mysql
+                    """
                 }
             }
         }
@@ -72,9 +71,9 @@ pipeline {
             steps {
                 script {
                     sh """
-                    docker ps -q --filter "name=my-frontend-container" | grep -q . && docker stop my-frontend-container && docker rm my-frontend-container || true
-                    docker ps -q --filter "name=my-backend-container" | grep -q . && docker stop my-backend-container && docker rm my-backend-container || true
-                    docker ps -q --filter "name=my-mysql-container" | grep -q . && docker stop my-mysql-container && docker rm my-mysql-container || true
+                    docker ps -q --filter "name=my-frontend-container" | xargs -r docker stop | xargs -r docker rm
+                    docker ps -q --filter "name=my-backend-container" | xargs -r docker stop | xargs -r docker rm
+                    docker ps -q --filter "name=my-mysql-container" | xargs -r docker stop | xargs -r docker rm
                     """
                 }
             }
@@ -85,9 +84,11 @@ pipeline {
                 script {
                     sh "docker network create $NETWORK_NAME || true"
 
-                    sh "docker run -d --name my-mysql-container --network $NETWORK_NAME -p 3306:3306 $ECR_REPO:mysql"
-                    sh "docker run -d --name my-backend-container --network $NETWORK_NAME -p 8000:8000 $ECR_REPO:backend"
-                    sh "docker run -d --name my-frontend-container --network $NETWORK_NAME -p 5000:5000 $ECR_REPO:frontend"
+                    sh """
+                    docker run -d --name my-mysql-container --network $NETWORK_NAME -p 3306:3306 $ECR_REPO:mysql
+                    docker run -d --name my-backend-container --network $NETWORK_NAME -p 8000:8000 $ECR_REPO:backend
+                    docker run -d --name my-frontend-container --network $NETWORK_NAME -p 5000:5000 $ECR_REPO:frontend
+                    """
                 }
             }
         }
