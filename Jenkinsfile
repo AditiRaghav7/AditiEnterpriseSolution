@@ -9,7 +9,7 @@ pipeline {
         FRONTEND_IMAGE = 'my-frontend-image'
         BACKEND_IMAGE = 'my-backend-image'
         MYSQL_IMAGE = 'my-mysql-image'
-      AWS_PROFILE = "default"  # Change if using a named AWS CLI profile
+      AWS_PROFILE = "default"  
 
     }
 
