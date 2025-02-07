@@ -13,7 +13,14 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/AditiRaghav7/employee-ecr-jenkins.git'
+                script {
+                    if (fileExists('.git')) {
+                        sh 'git fetch --all'
+                        sh 'git reset --hard origin/main'
+                    } else {
+                        sh 'git clone -b main https://github.com/AditiRaghav7/employee-ecr-jenkins.git .'
+                    }
+                }
             }
         }
 
