@@ -31,10 +31,10 @@ pipeline {
                 script {
                     sh 'pwd && ls -la' // Debugging workspace
 
-                    if (fileExists('frontEnd')) {
-                        sh "docker build -t my-frontend-image ./frontEnd"
+                    if (fileExists('frontend')) {
+                        sh "docker build -t my-frontend-image ./frontend"
                     } else {
-                        error("ERROR: frontEnd directory not found!")
+                        error("ERROR: frontend directory not found!")
                     }
 
                     if (fileExists('backend')) {
