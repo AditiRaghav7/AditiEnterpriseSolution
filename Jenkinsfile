@@ -24,12 +24,28 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Verify and Build Docker Images') {
             steps {
                 script {
-                    sh "docker build -t my-frontend-image ./frontEnd"
-                    sh "docker build -t my-backend-image ./backend"
-                    sh "docker build -t my-mysql-image ./mysql"
+                    sh 'pwd && ls -la' // Debugging workspace
+
+                    if (fileExists('frontEnd')) {
+                        sh "docker build -t my-frontend-image ./frontEnd"
+                    } else {
+                        error("ERROR: frontEnd directory not found!")
+                    }
+
+                    if (fileExists('backend')) {
+                        sh "docker build -t my-backend-image ./backend"
+                    } else {
+                        error("ERROR: backend directory not found!")
+                    }
+
+                    if (fileExists('mysql')) {
+                        sh "docker build -t my-mysql-image ./mysql"
+                    } else {
+                        error("ERROR: mysql directory not found!")
+                    }
                 }
             }
         }
@@ -37,13 +53,15 @@ pipeline {
         stage('Tag and Push Images to ECR') {
             steps {
                 script {
-                    sh "docker tag my-frontend-image $ECR_REPO:frontend"
-                    sh "docker tag my-backend-image $ECR_REPO:backend"
-                    sh "docker tag my-mysql-image $ECR_REPO:mysql"
+                    sh """
+                    docker tag my-frontend-image $ECR_REPO:frontend
+                    docker tag my-backend-image $ECR_REPO:backend
+                    docker tag my-mysql-image $ECR_REPO:mysql
 
-                    sh "docker push $ECR_REPO:frontend"
-                    sh "docker push $ECR_REPO:backend"
-                    sh "docker push $ECR_REPO:mysql"
+                    docker push $ECR_REPO:frontend
+                    docker push $ECR_REPO:backend
+                    docker push $ECR_REPO:mysql
+                    """
                 }
             }
         }
@@ -51,9 +69,11 @@ pipeline {
         stage('Remove Old Containers') {
             steps {
                 script {
-                    sh "docker stop my-frontend-container || true && docker rm my-frontend-container || true"
-                    sh "docker stop my-backend-container || true && docker rm my-backend-container || true"
-                    sh "docker stop my-mysql-container || true && docker rm my-mysql-container || true"
+                    sh """
+                    docker ps -q --filter "name=my-frontend-container" | grep -q . && docker stop my-frontend-container && docker rm my-frontend-container || true
+                    docker ps -q --filter "name=my-backend-container" | grep -q . && docker stop my-backend-container && docker rm my-backend-container || true
+                    docker ps -q --filter "name=my-mysql-container" | grep -q . && docker stop my-mysql-container && docker rm my-mysql-container || true
+                    """
                 }
             }
         }
