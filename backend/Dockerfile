@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 8000
 EXPOSE 3306
-CMD ["node", "app.js"]
+CMD ["node", "start"]
