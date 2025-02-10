@@ -2,7 +2,7 @@ const express = require('express');
 const appRoutes = require('./routes/appRoutes.js');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const connection = require('./db/conn');  // Make sure to import the connection here
+//const connection = require('./db/conn');  // Make sure to import the connection here
 
 
 const app = express();
@@ -18,7 +18,4 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use("/", appRoutes);
 
-app.listen(PORT,"0.0.0.0",() => {
-  console.log(`Server is listening on port ${PORT}`);
-});
-
+app.listen(PORT, ()=> {console.log(`Server is listening on port ${PORT}`);})
