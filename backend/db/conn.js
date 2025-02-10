@@ -7,7 +7,7 @@ const connection = mysql.createConnection({
   password: "Aditi@1122",
   port: 3306,
   database: "employees_db",
-  connectTimeout: 10000 // Optional: Increase timeout to 10s
+  //connectTimeout: 10000 // Optional: Increase timeout to 10s
 });
 
 // Open the MySQL connection
