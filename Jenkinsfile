@@ -67,13 +67,26 @@ pipeline {
             }
         }
 
-        stage('Run New Containers') {
+        stage('Run MySQL Container') {
             steps {
                 script {
-                    sh "docker run -d --name my-mysql-container -p 3306:3306 ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                    def isPortUsed = sh(script: "sudo netstat -tulnp | grep ':3306 ' || true", returnStdout: true).trim()
+
+                    if (isPortUsed) {
+                        echo "Port 3306 is in use. Trying port 3307..."
+                        sh "docker run -d --name my-mysql-container -p 3307:3306 ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                    } else {
+                        sh "docker run -d --name my-mysql-container -p 3306:3306 ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                    }
+                }
+            }
+        }
+
+        stage('Run Backend & Frontend Containers') {
+            steps {
+                script {
                     sh "docker run -d --name my-backend-container -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
                     sh "docker run -d --name my-frontend-container -p 5000:5000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
-
                 }
             }
         }
