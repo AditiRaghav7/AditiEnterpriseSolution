@@ -2,7 +2,7 @@ const mysql = require("mysql2");
 
 // Create a connection to the database
 const connection = mysql.createConnection({
-  host: "my-mysql-container", // Use the MySQL container name instead of an IP
+  host: "16.170.223.140", // Use the MySQL container name instead of an IP
   user: "root",
   password: "Aditi@1122",
   port: 3306,
