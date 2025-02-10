@@ -1,7 +1,7 @@
 const mysql = require("mysql2");
 
 const connection = mysql.createConnection({
-  host: "16.16.201.88", // ✅ Use Docker container name
+  host: "13.61.5.29", // ✅ Use Docker container name
   user: "root",
   password: "Aditi@1122",
   port: "3306",
