@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const router = express.Router();
 const connection = require('./conn');
 // Backend API Base URL
-const host = '51.21.150.68:8000'; 
+const host = 'http://16.170.223.140:8000/'; 
 
 // Render Home Page
 router.get('/', (req, res) => {
