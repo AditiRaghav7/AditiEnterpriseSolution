@@ -6,4 +6,5 @@ RUN npm install
 COPY . .
 EXPOSE 8000
 EXPOSE 3306
-CMD ["node", "start"]
+CMD ["npm", "start"]
+
