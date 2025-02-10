@@ -1,6 +1,5 @@
 const mysql = require("mysql2");
 
-
 // Create a connection to the database
 const connection = mysql.createConnection({
   host: "16.16.201.88",
@@ -10,10 +9,14 @@ const connection = mysql.createConnection({
   database: "employees_db"
 });
 
-// open the MySQL connection
+// Open the MySQL connection with better error handling
 connection.connect(error => {
-  if (error) throw error;
-  console.log("Successfully connected to the MYSQL database.");
+  if (error) {
+    console.error("❌ MySQL Connection Failed:", error.message);
+    process.exit(1); // Stop execution if the connection fails
+  }
+  console.log("✅ Successfully connected to the MySQL database.");
 });
 
+// Export the connection for use in other files
 module.exports = connection;
