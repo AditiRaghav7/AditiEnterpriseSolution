@@ -2,7 +2,6 @@ FROM node
 RUN mkdir -p /app
 WORKDIR /app
 COPY package*.json ./
-RUN cp backend/package.json /app
 RUN npm install
 COPY . .
 EXPOSE 8000
