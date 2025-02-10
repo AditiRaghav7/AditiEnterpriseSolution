@@ -2,7 +2,7 @@ const express = require('express');
 const appRoutes = require('./routes/appRoutes.js');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-//const connection = require('./db/conn');  // Make sure to import the connection here
+const connection = require('./db/conn');  // Make sure to import the connection here
 
 
 const app = express();
