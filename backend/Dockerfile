@@ -15,7 +15,11 @@ RUN npm install
 COPY . .
 
 # Expose necessary ports
-
+ENV MYSQL_HOST="13.61.5.29"
+ENV MYSQL_USER="root"
+ENV MYSQL_PASSWORD="Aditi@1122"
+ENV MYSQL_DATABASE="employees_db"
+ENV MYSQL_PORT="3306"
 EXPOSE 8000
 # Start the application
 CMD ["npm", "start"]
