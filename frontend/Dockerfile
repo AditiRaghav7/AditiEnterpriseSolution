@@ -16,6 +16,7 @@ COPY . .
 
 # Expose necessary ports
 EXPOSE 5000
+EXPOSE 3306
 
 # Start the application
 CMD ["npm", "start"]
