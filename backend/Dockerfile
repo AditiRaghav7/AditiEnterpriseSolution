@@ -15,7 +15,7 @@ RUN npm install
 COPY . .
 
 # Expose necessary ports
-ENV MYSQL_HOST="13.61.5.29"
+ENV MYSQL_HOST="my-mysql-container"
 ENV MYSQL_USER="root"
 ENV MYSQL_PASSWORD="Aditi@1122"
 ENV MYSQL_DATABASE="employees_db"
