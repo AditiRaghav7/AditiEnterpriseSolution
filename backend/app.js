@@ -11,14 +11,11 @@ app.use(cors());
 
 const PORT = process.env.PORT || 8000;
 
-app.use(express.json());
+app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
-app.set('views', 'views');
-app.use(bodyParser.urlencoded({ extended: false }));
+app.set('view engine', 'ejs')
+app.set('views', 'views')
+app.use(bodyParser.urlencoded({ extended: false }))
 
-app.use("/", appRoutes);
-
-app.listen(PORT,() => {
-  console.log(`Server is listening on port ${PORT}`);
-});
+app.use("/", appRoutes)
+app.listen(PORT, ()=> {console.log(`Server is listening on port ${PORT}`);})
