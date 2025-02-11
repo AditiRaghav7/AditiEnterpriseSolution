@@ -70,20 +70,9 @@ pipeline {
         stage('Run New Containers') {
             steps {
                 script {
-                    // Stop MySQL service if running
-                    sh "sudo systemctl stop mysql || true"
-
-                    // Find and kill any process using port 3306
-                    sh "sudo lsof -t -i:3306 | xargs sudo kill -9 || true"
-
-                    // Start MySQL container
-                    sh "docker run -d --name my-mysql-container -p 3306:3306 ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
-
-                    // Start Backend container
-                    sh "docker run -d --name my-backend-container -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
-
-                    // Start Frontend container
-                    sh "docker run -d --name my-frontend-container -p 5000:5000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
+                    sh "docker run -d --name my-mysql-container ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                    sh "docker run -d --name my-backend-container ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
+                    sh "docker run -d --name my-frontend-container ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
                 }
             }
         }
