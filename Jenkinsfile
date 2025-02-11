@@ -32,6 +32,16 @@ pipeline {
             }
         }
 
+        stage('Remove Old Images from ECR') {
+            steps {
+                script {
+                    sh "aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=frontend-latest || true"
+                    sh "aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=backend-latest || true"
+                    sh "aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=mysql-latest || true"
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 script {
@@ -57,12 +67,12 @@ pipeline {
             }
         }
 
-        stage('Remove Old Containers') {
+        stage('Stop and Remove Old Containers') {
             steps {
                 script {
-                    sh "docker rm -f my-frontend-container || true"
-                    sh "docker rm -f my-backend-container || true"
-                    sh "docker rm -f my-mysql-container || true"
+                    sh "docker stop my-frontend-container || true && docker rm my-frontend-container || true"
+                    sh "docker stop my-backend-container || true && docker rm my-backend-container || true"
+                    sh "docker stop my-mysql-container || true && docker rm my-mysql-container || true"
                 }
             }
         }
@@ -70,9 +80,15 @@ pipeline {
         stage('Run New Containers') {
             steps {
                 script {
-                    sh "docker run -d --name my-mysql-container ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
-                    sh "docker run -d --name my-backend-container ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
-                    sh "docker run -d --name my-frontend-container ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
+                    sh "docker run -d --name my-mysql-container -p 3306:3306 \
+                        -e MYSQL_ROOT_PASSWORD=mysecurepassword \
+                        -e MYSQL_DATABASE=mydb \
+                        -e MYSQL_USER=myuser \
+                        -e MYSQL_PASSWORD=mypassword \
+                        ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+
+                    sh "docker run -d --name my-backend-container -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
+                    sh "docker run -d --name my-frontend-container -p 5000:5000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
                 }
             }
         }
