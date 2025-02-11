@@ -3,10 +3,8 @@ FROM mysql
 
 # Set environment variables for MySQL root password, database, and user
 ENV MYSQL_HOST="my-mysql-container"
-ENV MYSQL_USER="root"
 ENV MYSQL_PASSWORD="Aditi@1122"
 ENV MYSQL_DATABASE="employees_db"
-ENV MYSQL_PORT="3306"
 
 
 EXPOSE 3306
