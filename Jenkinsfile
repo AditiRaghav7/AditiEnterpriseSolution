@@ -81,10 +81,10 @@ pipeline {
             steps {
                 script {
                     sh "docker run -d --name my-mysql-container -p 3306:3306 \
-                        -e MYSQL_ROOT_PASSWORD=mysecurepassword \
-                        -e MYSQL_DATABASE=mydb \
-                        -e MYSQL_USER=myuser \
-                        -e MYSQL_PASSWORD=mypassword \
+                        -e MYSQL_ROOT_PASSWORD=Aditi@1122 \
+                        -e MYSQL_DATABASE=employees_db \
+                        -e MYSQL_USER=root \
+                        -e MYSQL_PASSWORD=Aditi@1122 \
                         ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
 
                     sh "docker run -d --name my-backend-container -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
