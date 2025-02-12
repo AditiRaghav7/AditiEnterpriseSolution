@@ -30,9 +30,9 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    sh 'docker build -t $ECR_REPO_FRONTEND:latest ./EMA/frontend'
-                    sh 'docker build -t $ECR_REPO_BACKEND:latest ./EMA/backend'
-                    sh 'docker build -t $ECR_REPO_DB:latest ./EMA/db'
+                    sh 'docker build -t $ECR_REPO_FRONTEND:latest ./frontend'
+                    sh 'docker build -t $ECR_REPO_BACKEND:latest ./backend'
+                    sh 'docker build -t $ECR_REPO_DB:latest ./mysql'
                 }
             }
         }
