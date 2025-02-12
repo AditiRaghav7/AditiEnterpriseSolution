@@ -1,0 +1,17 @@
+nohup: ignoring input
+Server is listening on port 8000
+Successfully connected to the MySQL database.
+Employees:  [
+  {
+    emp_id: 1,
+    emp_name: 'aditi',
+    emp_contact: '7669148027',
+    emp_add: 'gurugram'
+  },
+  {
+    emp_id: 2,
+    emp_name: 'ioljjlkj',
+    emp_contact: '0909099',
+    emp_add: 'ytguhjnkml'
+  }
+]
