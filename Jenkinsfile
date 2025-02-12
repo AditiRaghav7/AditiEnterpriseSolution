@@ -66,6 +66,7 @@ pipeline {
 
                     sh 'docker run -d --name ema-frontend-container -p 5000:5000 $ECR_URL/$ECR_REPO_FRONTEND:latest'
                     sh 'docker run -d --name ema-db-container -p 3306:3306 $ECR_URL/$ECR_REPO_DB:latest'
+                    sh 'sleep 20'  // Wait for 20 seconds before starting the backend container
                     sh 'docker run -d --name ema-backend-container -p 8000:8000 $ECR_URL/$ECR_REPO_BACKEND:latest'
                     
                 }
