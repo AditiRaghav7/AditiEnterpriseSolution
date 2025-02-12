@@ -2,42 +2,27 @@ pipeline {
     agent any
 
     environment {
+        AWS_ACCOUNT_ID = '296062592493'
         AWS_REGION = 'eu-north-1'
-        ECR_REGISTRY = '296062592493.dkr.ecr.eu-north-1.amazonaws.com'
-        ECR_REPOSITORY = 'employee-ecr-jenkins'
-        FRONTEND_IMAGE = 'my-frontend-image'
-        BACKEND_IMAGE = 'my-backend-image'
-        MYSQL_IMAGE = 'my-mysql-image'
+        ECR_REPO_FRONTEND = 'ema-frontend'
+        ECR_REPO_BACKEND = 'ema-backend'
+        ECR_REPO_DB = 'ema-db'
+        ECR_URL = '296062592493.dkr.ecr.eu-north-1.amazonaws.com'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Cleanup Old Docker Images') {
             steps {
                 script {
-                    if (fileExists('.git')) {
-                        sh 'git fetch --all'
-                        sh 'git reset --hard origin/main'
-                    } else {
-                        sh 'git clone -b main https://github.com/AditiRaghav7/employee-ecr-jenkins.git .'
-                    }
+                    sh 'docker system prune -af'
                 }
             }
         }
 
-        stage('Authenticate with AWS ECR') {
+        stage('Login to AWS ECR') {
             steps {
                 script {
-                    sh 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY'
-                }
-            }
-        }
-
-        stage('Remove Old Images from ECR') {
-            steps {
-                script {
-                    sh "aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=frontend-latest || true"
-                    sh "aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=backend-latest || true"
-                    sh "aws ecr batch-delete-image --repository-name $ECR_REPOSITORY --image-ids imageTag=mysql-latest || true"
+                    sh 'aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 296062592493.dkr.ecr.eu-north-1.amazonaws.com'
                 }
             }
         }
@@ -45,50 +30,43 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    sh "docker build -t ${FRONTEND_IMAGE} ./frontend"
-                    sh "docker build -t ${BACKEND_IMAGE} ./backend"
-                    sh "docker build -t ${MYSQL_IMAGE} ./mysql"
+                    sh 'docker build -t $ECR_REPO_FRONTEND:latest ./EMA/frontend'
+                    sh 'docker build -t $ECR_REPO_BACKEND:latest ./EMA/backend'
+                    sh 'docker build -t $ECR_REPO_DB:latest ./EMA/db'
                 }
             }
         }
 
-        stage('Tag and Push Docker Images to ECR') {
+        stage('Tag Docker Images') {
             steps {
                 script {
-                    sh "docker tag ${FRONTEND_IMAGE}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
-                    sh "docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
-
-                    sh "docker tag ${BACKEND_IMAGE}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
-                    sh "docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
-
-                    sh "docker tag ${MYSQL_IMAGE}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
-                    sh "docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                    sh 'docker tag $ECR_REPO_FRONTEND:latest $ECR_URL/$ECR_REPO_FRONTEND:latest'
+                    sh 'docker tag $ECR_REPO_BACKEND:latest $ECR_URL/$ECR_REPO_BACKEND:latest'
+                    sh 'docker tag $ECR_REPO_DB:latest $ECR_URL/$ECR_REPO_DB:latest'
                 }
             }
         }
 
-        stage('Stop and Remove Old Containers') {
+        stage('Push Images to AWS ECR') {
             steps {
                 script {
-                    sh "docker stop my-frontend-container || true && docker rm my-frontend-container || true"
-                    sh "docker stop my-backend-container || true && docker rm my-backend-container || true"
-                    sh "docker stop my-mysql-container || true && docker rm my-mysql-container || true"
+                    sh 'docker push $ECR_URL/$ECR_REPO_FRONTEND:latest'
+                    sh 'docker push $ECR_URL/$ECR_REPO_BACKEND:latest'
+                    sh 'docker push $ECR_URL/$ECR_REPO_DB:latest'
                 }
             }
         }
 
-        stage('Run New Containers') {
+        stage('Deploy Containers') {
             steps {
                 script {
-                    sh "docker run -d --name my-mysql-container -p 3306:3306 \
-                        -e MYSQL_ROOT_PASSWORD=Aditi@1122 \
-                        -e MYSQL_DATABASE=employees_db \
-                        -e MYSQL_USER=root \
-                        -e MYSQL_PASSWORD=Aditi@1122 \
-                        ${ECR_REGISTRY}/${ECR_REPOSITORY}:mysql-latest"
+                    sh 'docker stop ema-frontend-container || true && docker rm ema-frontend-container || true'
+                    sh 'docker stop ema-backend-container || true && docker rm ema-backend-container || true'
+                    sh 'docker stop ema-db-container || true && docker rm ema-db-container || true'
 
-                    sh "docker run -d --name my-backend-container -p 8000:8000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:backend-latest"
-                    sh "docker run -d --name my-frontend-container -p 5000:5000 ${ECR_REGISTRY}/${ECR_REPOSITORY}:frontend-latest"
+                    sh 'docker run -d --name ema-frontend-container -p 8000:8000 $ECR_URL/$ECR_REPO_FRONTEND:latest'
+                    sh 'docker run -d --name ema-backend-container -p 5000:5000 $ECR_URL/$ECR_REPO_BACKEND:latest'
+                    sh 'docker run -d --name ema-db-container -p 3306:3306 $ECR_URL/$ECR_REPO_DB:latest'
                 }
             }
         }
