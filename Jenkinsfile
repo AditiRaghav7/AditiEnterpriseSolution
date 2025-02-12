@@ -6,7 +6,7 @@ pipeline {
         AWS_REGION = 'eu-north-1'
         ECR_REPO_FRONTEND = 'ema-frontend'
         ECR_REPO_BACKEND = 'ema-backend'
-        ECR_REPO_DB = 'ema-db'
+        ECR_REPO_DB = 'mysql'
         ECR_URL = '296062592493.dkr.ecr.eu-north-1.amazonaws.com'
     }
 
